@@ -9,31 +9,77 @@ import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.RectF;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
-import android.view.SurfaceView;
+import android.view.View;
 
-public class GameView extends SurfaceView{
+public class GameView extends View {
 
+	/**
+	 * 控件宽度
+	 */
 	private int screenWidth;
+	/**
+	 * 控件高度
+	 */
 	private int screenHeight;
+	/**
+	 *距离上下的长度
+	 */
 	private int paddingTopAndBottom;
+	/**
+	 *棋格边长
+	 */
 	private int chessPieceLength;
+	/**
+	 *棋子半径
+	 */
 	private int chessPieceRadius;
+	/**
+	 *点击坐标X
+	 */
 	private int touchX;
+	/**
+	 *点击坐标Y
+	 */
 	private int touchY;
+	/**
+	 *行数
+	 */
 	private int lines;
+	/**
+	 *列数
+	 */
 	private int columns;
 	private boolean isFirst = true;
+	/**
+	 *棋盘
+	 */
 	private int chessBoard[][];
+	/**
+	 *轮到什么颜色的轮次
+	 */
 	private boolean isBlacked = false;
 	private TextShow textShow;
+	/**
+	 *黑棋画笔
+	 */
 	private Paint leftPaint;
+	/**
+	 *白棋画笔
+	 */
 	private Paint rightPaint;
+	/**
+	 *边框画笔
+	 */
 	private Paint slidePaint;
+	/**
+	 *文字画笔
+	 */
 	private Paint textPaint;
+	/**
+	 *自定义参数-每行棋格数
+	 */
 	private int tabCount;
-	private Context context;
 	
 	public interface TextShow
 	{
@@ -43,30 +89,31 @@ public class GameView extends SurfaceView{
 	{
 		this.textShow = textShow;
 	}
+
 	public GameView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
-		this.context = context;
 		TypedArray a = context.obtainStyledAttributes(attrs,R.styleable.GameView);
 		tabCount = a.getInt(R.styleable.GameView_tab_count,8);
 		a.recycle();
 		// TODO Auto-generated constructor stub
 		init();
 	}
+
 	public GameView(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		this.context = context;
 		// TODO Auto-generated constructor stub
 		TypedArray a = context.obtainStyledAttributes(attrs,R.styleable.GameView);
 		tabCount = a.getInt(R.styleable.GameView_tab_count,8);
 		a.recycle();
 		init();
 	}
+
 	public GameView(Context context) {
 		super(context);
-		this.context = context;
 		// TODO Auto-generated constructor stub
 		init();
 	}
+
 	private void init(){
 		isFirst = true;
 		chessBoard = new int[tabCount][tabCount];
@@ -74,8 +121,6 @@ public class GameView extends SurfaceView{
 		textPaint.setTextSize(50);
 		textPaint.setTextAlign(Align.CENTER);
 		textPaint.setColor(Color.BLACK);
-		textPaint.setStyle(Paint.Style.STROKE);
-		textPaint.setStrokeWidth(5);
 
 		leftPaint = new Paint();
 		leftPaint.setAntiAlias(true);
@@ -96,12 +141,13 @@ public class GameView extends SurfaceView{
 
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
 		screenWidth = MeasureSpec.getSize(widthMeasureSpec);
 		screenHeight = MeasureSpec.getSize(heightMeasureSpec);
 		paddingTopAndBottom = (screenHeight - screenWidth) / 2;
 		chessPieceLength = screenWidth  / tabCount;
 		chessPieceRadius = chessPieceLength  / 2;
+		setMeasuredDimension(screenWidth,screenHeight);
 	}
 
 	@Override
@@ -113,29 +159,25 @@ public class GameView extends SurfaceView{
 	protected void onDraw(Canvas canvas) {
 		// TODO Auto-generated method stub
 		super.onDraw(canvas);
-		Log.i("lzq"," start Draw");
 
 		for (int i = 0; i <= tabCount; i++) {
 			canvas.drawLine(chessPieceLength *i, paddingTopAndBottom, chessPieceLength *i, screenHeight - paddingTopAndBottom, leftPaint);
 			canvas.drawLine(0, paddingTopAndBottom + chessPieceLength *i, screenWidth, paddingTopAndBottom + chessPieceLength *i, leftPaint);
 		}
 		if (isFirst) {
-			canvas.drawText("白方先行", screenWidth /2, paddingTopAndBottom /2, leftPaint);
+			canvas.drawCircle(screenWidth /2 , paddingTopAndBottom /2, chessPieceRadius *0.9f, rightPaint);
 			isFirst = false;
 		}else if (isBlacked) {
-			canvas.drawText("黑方下", screenWidth /2, paddingTopAndBottom /2, leftPaint);
+			canvas.drawCircle(screenWidth /2 , paddingTopAndBottom /2, chessPieceRadius *0.9f, leftPaint);
 		}else{
-			canvas.drawText("白方下", screenWidth /2, paddingTopAndBottom /2, leftPaint);
+			canvas.drawCircle(screenWidth /2 , paddingTopAndBottom /2, chessPieceRadius *0.9f, rightPaint);
 		}
 	
 		for (int i = 0; i < tabCount; i++) {
 			for (int j = 0; j < tabCount; j++) {
 				if (chessBoard[i][j]==1) {
-					Log.i("lzq","绘制白棋"+chessPieceRadius);
 					canvas.drawCircle(chessPieceRadius + chessPieceLength *i, paddingTopAndBottom + chessPieceRadius + chessPieceLength *j, chessPieceRadius *0.9f, leftPaint);
-				}else if(chessBoard[i][j]==2)
-				{
-					Log.i("lzq","绘制黑棋"+chessPieceRadius);
+				}else if(chessBoard[i][j]==2) {
 					canvas.drawCircle(chessPieceRadius + chessPieceLength *i, paddingTopAndBottom + chessPieceRadius + chessPieceLength *j, chessPieceRadius *0.9f, rightPaint);
 				}
 			}
@@ -174,24 +216,29 @@ public class GameView extends SurfaceView{
 					}
 				}
 			}
-			if (GameUtils.end()==2) {
-				showMsg(2);
-				GameUtils.init(chessBoard,tabCount);
-			}
-			if(GameUtils.end()==1)
-			{
-				showMsg(1);
-				GameUtils.init(chessBoard,tabCount);
-			}
-			if(GameUtils.end()==3){
-				showMsg(3);
-				GameUtils.init(chessBoard,tabCount);
-			}
+			balance();
 			postInvalidate();
 			break;
 		}
 		return super.onTouchEvent(event);
 	}
+
+	private void balance() {
+		if (GameUtils.end()==2) {
+			showMsg(2);
+			GameUtils.init(chessBoard,tabCount);
+		}
+		if(GameUtils.end()==1)
+		{
+			showMsg(1);
+			GameUtils.init(chessBoard,tabCount);
+		}
+		if(GameUtils.end()==3){
+			showMsg(3);
+			GameUtils.init(chessBoard,tabCount);
+		}
+	}
+
 	private void showMsg(int code){
 		if (textShow!=null) {
 			textShow.textShow(code);
